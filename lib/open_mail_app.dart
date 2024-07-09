@@ -3,7 +3,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:platform/platform.dart';
-import 'package:url_launcher/url_launcher.dart';
+import 'package:url_launcher/url_launcher_string.dart';
 
 /// Launch Schemes for supported apps:
 const String _LAUNCH_SCHEME_APPLE_MAIL = 'message://';
@@ -129,10 +129,7 @@ class OpenMailApp {
     } else if (_isIOS) {
       final apps = await _getIosMailApps();
       if (apps.length == 1) {
-        final result = await launch(
-          apps.first.iosLaunchScheme,
-          forceSafariVC: false,
-        );
+        final result = await launchUrlString(apps.first.iosLaunchScheme);
         return OpenMailAppResult(didOpen: result);
       } else {
         return OpenMailAppResult(didOpen: false, options: apps);
@@ -170,10 +167,7 @@ class OpenMailApp {
         String? launchScheme =
             installedApps.first.composeLaunchScheme(emailContent);
         if (launchScheme != null) {
-          result = await launch(
-            launchScheme,
-            forceSafariVC: false,
-          );
+          result = await launchUrlString(launchScheme);
         }
         return OpenMailAppResult(didOpen: result);
       } else {
@@ -209,10 +203,7 @@ class OpenMailApp {
     } else if (_isIOS) {
       String? launchScheme = mailApp.composeLaunchScheme(emailContent);
       if (launchScheme != null) {
-        return await launch(
-          launchScheme,
-          forceSafariVC: false,
-        );
+        return await launchUrlString(launchScheme);
       }
 
       return false;
@@ -232,10 +223,7 @@ class OpenMailApp {
           false;
       return result;
     } else if (_isIOS) {
-      return await launch(
-        mailApp.iosLaunchScheme,
-        forceSafariVC: false,
-      );
+      return await launchUrlString(mailApp.iosLaunchScheme);
     } else {
       throw Exception('Platform not supported');
     }
@@ -271,7 +259,7 @@ class OpenMailApp {
   static Future<List<MailApp>> _getIosMailApps() async {
     var installedApps = <MailApp>[];
     for (var app in _supportedMailApps) {
-      if (await canLaunch(app.iosLaunchScheme) &&
+      if (await canLaunchUrlString(app.iosLaunchScheme) &&
           !_filterList.contains(app.name.toLowerCase())) {
         installedApps.add(app);
       }
